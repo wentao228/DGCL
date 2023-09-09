@@ -12,6 +12,7 @@ import random
 import wandb
 
 
+# Function to set random seed for reproducibility
 def set_seed(seed):
     print(seed)
     random.seed(seed)
@@ -24,6 +25,7 @@ def set_seed(seed):
         t.backends.cudnn.deterministic = True
 
 
+# Define the Coach class for model training and evaluation
 class Coach:
     def __init__(self, handler):
         self.handler = handler
@@ -36,6 +38,7 @@ class Coach:
             self.metrics['Train' + met] = list()
             self.metrics['Test' + met] = list()
 
+    # Function to create a formatted print statement
     def makePrint(self, name, ep, reses, save):
         ret = 'Epoch %d/%d, %s: ' % (ep, args.epoch, name)
         for metric in reses:
@@ -47,6 +50,7 @@ class Coach:
         ret = ret[:-2] + '  '
         return ret
 
+    # Function to perform external testing
     def external_test_run(self):
         self.prepareModel()
         log('Model Prepared')
@@ -56,6 +60,7 @@ class Coach:
         log(self.makePrint('Test', args.epoch, reses, True))
         return reses['Acc']
 
+    # Function to train and evaluate the model
     def run(self):
         self.prepareModel()
         log('Model Prepared')
@@ -82,10 +87,12 @@ class Coach:
         self.save_model('{}'.format(config['iteration']))
         return reses['Acc']
 
+    # Function to prepare the model and optimizer
     def prepareModel(self):
         self.model = Model().cuda()
         self.opt = t.optim.Adam(self.model.parameters(), lr=args.lr, weight_decay=0)
 
+    # Function to train a single epoch
     def trainEpoch(self):
         self.model.train()
         trnLoader = self.handler.trnLoader
@@ -111,6 +118,7 @@ class Coach:
         ret['preLoss'] = epPreLoss / steps
         return ret
 
+    # Function to test a single epoch
     def testEpoch(self):
         self.model.eval()
         tstLoader = self.handler.tstLoader
@@ -126,16 +134,18 @@ class Coach:
             pre = F.log_softmax(pre, dim=1)
             pre = pre.data.max(1, keepdim=True)[1].detach().cpu()
             labels = labels.detach().cpu()
-            epAcc = accuracy_score(pre, labels)
+            epAcc = accuracy_score(labels, pre)
         ret = dict()
         ret['Acc'] = epAcc
         return ret
 
+    # Function to load a pre-trained model
     def loadModel(self):
         self.model.load_state_dict(t.load('../Models/' + args.load_model + '.pkl'))
         self.opt = t.optim.Adam(self.model.parameters(), lr=args.lr, weight_decay=0)
         log('Model Loaded')
 
+    # Function to save the trained model
     def save_model(self, model_path):
         model_parent_path = os.path.join(wandb.run.dir, 'ckl')
         if not os.path.exists(model_parent_path):
@@ -143,6 +153,7 @@ class Coach:
         t.save(self.model.state_dict(), '{}/{}_model.pkl'.format(model_parent_path, model_path))
 
 
+# Main execution block
 if __name__ == '__main__':
     if args.is_debug is True:
         print("DEBUGGING MODE - Start without wandb")

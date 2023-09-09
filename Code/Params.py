@@ -23,6 +23,7 @@ def ParseArgs():
                         help='seed')
     parser.add_argument('--iteration', type=int, default='1', help='iteration')
     parser.add_argument('--is_debug', type=bool, default=False, help='is_debug')
+    parser.add_argument('--dense', action='store_true', default=False, help='dense')
     parser.add_argument('--validate', action='store_true', default=False,
                         help='if set, use validation mode which splits all relations into \
 	                        train/val/test and evaluate on val only;\

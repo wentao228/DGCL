@@ -5,6 +5,17 @@ saveDefault = False
 
 
 def log(msg, save=None, oneline=False):
+    """
+    Log a message with an optional timestamp.
+
+    Parameters:
+    msg (str): The message to be logged.
+    save (bool, optional): Whether to save the message. If None, it uses the default behavior defined by `saveDefault`.
+    oneline (bool, optional): Whether to display the message on a single line.
+
+    Returns:
+    None
+    """
     global logmsg
     global saveDefault
     time = datetime.datetime.now()

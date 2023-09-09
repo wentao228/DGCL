@@ -160,6 +160,7 @@ class DataHandler:
         relation_mx_train = sp.csr_matrix(relation_mx_train.reshape(num_drugs, num_genes))
         relation_mx_test = sp.csr_matrix(relation_mx_test.reshape(num_drugs, num_genes))
 
+        # make external testing set
         if dataset == 'LINCS':
             filename_external_test = '../Data/' + dataset + '/' + mode + '/external_test.csv'
             data_external_test = pd.read_csv(
@@ -190,6 +191,15 @@ class DataHandler:
             val_labels, d_val_idx, g_val_idx, test_labels, d_test_idx, g_test_idx, class_values
 
     def normalizeAdj(self, mat):
+        """
+        Normalize an adjacency matrix using the degree normalization technique.
+
+        Parameters:
+        mat (sparse matrix): The input adjacency matrix to be normalized.
+
+        Returns:
+        sparse matrix: The normalized adjacency matrix.
+        """
         degree = np.array(mat.sum(axis=-1))
         dInvSqrt = np.reshape(np.power(degree, -0.5), [-1])
         dInvSqrt[np.isinf(dInvSqrt)] = 0.0
@@ -197,6 +207,15 @@ class DataHandler:
         return mat.dot(dInvSqrtMat).transpose().dot(dInvSqrtMat).tocoo()
 
     def makeTorchAdj(self, mat):
+        """
+        Convert a SciPy sparse matrix into a PyTorch sparse tensor and apply normalization.
+
+        Parameters:
+        mat (sparse matrix): The input sparse matrix to be converted and normalized.
+
+        Returns:
+        torch.sparse.FloatTensor: A PyTorch sparse tensor with applied normalization.
+        """
         a = sp.csr_matrix((args.drug, args.drug))
         b = sp.csr_matrix((args.gene, args.gene))
         mat = sp.vstack([sp.hstack([a, mat]), sp.hstack([mat.transpose(), b])])
@@ -211,12 +230,18 @@ class DataHandler:
         return t.sparse.FloatTensor(idxs, vals, shape).cuda()
 
     def LoadData(self):
+        """
+        This method loads the dataset, preprocesses it, and creates data loaders for training and testing.
+        """
         relation_mx_train, relation_mx_test, train_labels, d_train_idx, g_train_idx, \
             val_labels, d_val_idx, g_val_idx, test_labels, d_test_idx, g_test_idx, class_values = self.load_data_from_database(
             args.data)
+
+        # Apply thresholding to the adjacency matrices
         trnMat, tstMat = relation_mx_train, relation_mx_test
         trnMat[trnMat >= 1] = 1
         tstMat[tstMat >= 1] = 1
+
         if type(trnMat) != coo_matrix:
             trnMat = sp.coo_matrix(trnMat)
         if type(tstMat) != coo_matrix:
@@ -235,6 +260,7 @@ class DataHandler:
         self.tstLoader = dataloader.DataLoader(tstData, batch_size=args.tstBat, shuffle=False, num_workers=0)
 
 
+# Data loader for training data
 class TrnData(data.Dataset):
     def __init__(self, train_labels, d_train_idx, g_train_idx):
         self.train_labels = train_labels
@@ -248,6 +274,7 @@ class TrnData(data.Dataset):
         return self.d_train_idx[idx], self.g_train_idx[idx], self.train_labels[idx]
 
 
+# Data loader for testing data
 class TstData(data.Dataset):
     def __init__(self, test_labels, d_test_idx, g_test_idx):
         self.test_labels = test_labels
