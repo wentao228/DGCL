@@ -4,6 +4,22 @@ This repository provides the code and data for the paper
 
 >Prediction of multi-relational drug-gene interaction via dynamic hypergraph contrastive learning
 
+## Citation
+If you want to use our code and datasets in your research, please cite:
+
+```
+@article{tao2023prediction,
+  title={Prediction of multi-relational drug--gene interaction via Dynamic hyperGraph Contrastive Learning},
+  author={Tao, Wen and Liu, Yuansheng and Lin, Xuan and Song, Bosheng and Zeng, Xiangxiang},
+  journal={Briefings in Bioinformatics},
+  volume={24},
+  number={6},
+  pages={bbad371},
+  year={2023},
+  publisher={Oxford University Press}
+}
+```
+
 ## 1. Requirements
 
 To run the code, you need the following dependencies:
